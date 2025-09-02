@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
@@ -36,3 +36,14 @@ class Reservation(Base):
     end_time = Column(DateTime, nullable=False)
 
     machine = relationship("Machine", back_populates="reservations")
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, default="user")  # "user" or "admin"
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    reservations = relationship("Reservation", back_populates="user")

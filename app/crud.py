@@ -1,6 +1,6 @@
 # crud.py
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from app import models, schemas
 
 # ROOMS
@@ -48,23 +48,50 @@ def delete_machine(db: Session, machine_id: int):
 def list_machines(db: Session):
     return db.query(models.Machine).all()
 
+def get_machine(db: Session, machine_id: int):
+    return db.query(models.Machine).filter(models.Machine.id == machine_id).first()
+
 # RESERVATIONS
 
+# def create_reservation(db: Session, data: schemas.ReservationCreate):
+#     # basic conflict guard (MVP): ensure [start,end) doesn't overlap existing for same machine
+#     overlap = db.query(models.Reservation).filter(
+#         models.Reservation.machine_id == data.machine_id,
+#         models.Reservation.start_time < data.end_time,
+#         models.Reservation.end_time > data.start_time,
+#     ).first()
+#     if overlap:
+#         raise ValueError("Time slot already reserved.")
+
+#     r = models.Reservation(
+#         machine_id=data.machine_id,
+#         user_id=data.user_id,
+#         start_time=data.start_time,
+#         end_time=data.end_time,
+#     )
+#     db.add(r)
+#     db.commit()
+#     db.refresh(r)
+#     return r
+
 def create_reservation(db: Session, data: schemas.ReservationCreate):
-    # basic conflict guard (MVP): ensure [start,end) doesn't overlap existing for same machine
+    start_time = datetime.now(timezone.utc)
+    end_time = start_time + timedelta(minutes=data.duration_minutes)
+
+    # check for overlap
     overlap = db.query(models.Reservation).filter(
         models.Reservation.machine_id == data.machine_id,
-        models.Reservation.start_time < data.end_time,
-        models.Reservation.end_time > data.start_time,
+        models.Reservation.start_time < end_time,
+        models.Reservation.end_time > start_time,
     ).first()
     if overlap:
         raise ValueError("Time slot already reserved.")
 
     r = models.Reservation(
         machine_id=data.machine_id,
-        user_id=data.user_id,
-        start_time=data.start_time,
-        end_time=data.end_time,
+        user_id="anonymous",  # TEMP until auth added
+        start_time=start_time,
+        end_time=end_time,
     )
     db.add(r)
     db.commit()
@@ -84,3 +111,6 @@ def list_reservations(db: Session, machine_id: int | None = None):
     if machine_id is not None:
         q = q.filter(models.Reservation.machine_id == machine_id)
     return q.all()
+
+def get_reservations_by_machine(db: Session, machine_id: int):
+    return db.query(models.Reservation).filter(models.Reservation.machine_id == machine_id).all()

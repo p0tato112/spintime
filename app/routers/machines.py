@@ -17,6 +17,13 @@ def get_db():
 def get_machines(db: Session = Depends(get_db)):
     return crud.list_machines(db)
 
+@router.get("/{machine_id}", response_model=schemas.MachineRead)
+def get_machine(machine_id: int, db: Session = Depends(get_db)):
+    machine = crud.get_machine(db, machine_id)
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine not found")
+    return machine
+
 @router.post("", response_model=schemas.MachineRead, status_code=201)
 def post_machine(data: schemas.MachineCreate, db: Session = Depends(get_db)):
     try:

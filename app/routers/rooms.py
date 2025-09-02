@@ -21,8 +21,8 @@ def get_rooms(db: Session = Depends(get_db)):
 # def create_room(room: schemas.RoomCreate, db: Session = Depends(get_db)):
 #     return crud.create_room(db, room)
 
-@router.post("", response_model=schemas.MachineRead, status_code=201)
-def post_room(data: schemas.RoomCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=schemas.RoomRead, status_code=201)
+def create_room(data: schemas.RoomCreate, db: Session = Depends(get_db)):
     try:
         return crud.create_room(db, data)
     except Exception as e:

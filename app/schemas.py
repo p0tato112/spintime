@@ -12,6 +12,11 @@ class RoomBase(BaseModel):
 class RoomCreate(RoomBase):
     pass
 
+class RoomRead(RoomBase):
+    id: int
+    class Config:
+        from_attributes = True  # allows reading from SQLAlchemy objects
+
 class Room(RoomBase):
     id: int
     machines: List["Machine"] = []  # nested relationship
@@ -47,12 +52,13 @@ class Machine(MachineBase):
 
 class ReservationBase(BaseModel):
     machine_id: int
-    user_id: str
-    start_time: datetime
-    end_time: datetime
+    # user_id: str
+    # start_time: datetime
+    # end_time: datetime
 
 class ReservationCreate(ReservationBase):
     machine_id: int
+    duration_minutes: int = Field(gt=0)
 
 class ReservationRead(ReservationBase):
     id: int
@@ -65,3 +71,26 @@ class Reservation(ReservationBase):
 
     # class Config:
     #     orm_mode = True
+
+class ReservationRead(BaseModel):
+    id: int
+    machine_id: int
+    user_id: str
+    start_time: datetime
+    end_time: datetime
+    duration_minutes: int
+
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_orm(cls, obj):
+        duration = int((obj.end_time - obj.start_time).total_seconds() // 60)
+        return cls(
+            id=obj.id,
+            machine_id=obj.machine_id,
+            user_id=obj.user_id,
+            start_time=obj.start_time,
+            end_time=obj.end_time,
+            duration_minutes=duration,
+        )
