@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import database, models
 from datetime import datetime, timezone
 from .database import SessionLocal
-from app.routers import machines, reservations, rooms
+from app.routers import machines, reservations, rooms, auth
 import asyncio
 
 
@@ -30,6 +30,7 @@ app.add_middleware(
 app.include_router(machines.router)
 app.include_router(reservations.router)
 app.include_router(rooms.router)
+app.include_router(auth.router)
 
 # async task: delete reservations
 async def cleanup_reservations_task():

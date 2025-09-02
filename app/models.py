@@ -31,10 +31,11 @@ class Reservation(Base):
     __tablename__ = "reservations"
     id = Column(Integer, primary_key=True, index=True)
     machine_id = Column(Integer, ForeignKey("machines.id"), nullable=False)
-    user_id = Column(String, index=True)           # simple UUID/string for MVP
+    user_id = Column(Integer, ForeignKey("users.id"))          
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
 
+    user = relationship("User", back_populates="reservations")
     machine = relationship("Machine", back_populates="reservations")
 
 class User(Base):

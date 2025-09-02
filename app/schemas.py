@@ -94,3 +94,18 @@ class ReservationRead(BaseModel):
             end_time=obj.end_time,
             duration_minutes=duration,
         )
+    
+# USERS
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserRead(UserBase):
+    id: int
+    role: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
